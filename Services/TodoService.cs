@@ -1,5 +1,6 @@
 namespace Todo.Services;
 
+using Todo.DTOs;
 using Todo.Models;
 public class TodoService : ITodoService
 {
@@ -11,22 +12,10 @@ public class TodoService : ITodoService
         new Todo { Id = 3, Title = "Read a book", IsCompleted = false, CreatedAt = DateTime.UtcNow},
         new Todo { Id = 4, Title = "Write some code", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
         new Todo { Id = 5, Title = "Go for a run", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 1, Title = "Buy groceries", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 2, Title = "Walk the dog", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 3, Title = "Read a book", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 4, Title = "Write some code", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 5, Title = "Go for a run", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 1, Title = "Buy groceries", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 2, Title = "Walk the dog", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 3, Title = "Read a book", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 4, Title = "Write some code", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 5, Title = "Go for a run", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 1, Title = "Buy groceries", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 2, Title = "Walk the dog", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 3, Title = "Read a book", IsCompleted = false, CreatedAt = DateTime.UtcNow},
-        new Todo { Id = 4, Title = "Write some code", IsCompleted = true, CreatedAt = DateTime.UtcNow, CompletedAt = DateTime.UtcNow},
-        new Todo { Id = 5, Title = "Go for a run", IsCompleted = false, CreatedAt = DateTime.UtcNow},
     ];
+
+    private static int _nextId = 11;
+    private static readonly Lock _lock = new();
 
     // Lista todos os itens, mas não faz paginação. (Não utilizado no controller)
     public Task<IEnumerable<Todo>> GetAllAsync() => Task.FromResult<IEnumerable<Todo>>(_todos);
@@ -59,9 +48,19 @@ public class TodoService : ITodoService
         throw new NotImplementedException();
     }
     
-    public Task<Todo> CreateAsync(string title)
+    public Task<Todo> CreateAsync(CreateTodoRequest request)
     {
-        throw new NotImplementedException();
+        lock (_lock)
+        {
+            var todo = new Todo
+            {
+                Id = _nextId++,
+                Title = request.Title
+            };
+
+            _todos.Add(todo);
+            return Task.FromResult(todo);
+        }
     }
 
     public Task<bool> DeleteAsync(int id)

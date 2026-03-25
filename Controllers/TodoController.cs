@@ -26,5 +26,21 @@ public static class TodoController
             ));
         }
         );
+
+        api.MapPost("/todos", async (CreateTodoRequest request, ITodoService service) =>
+        {
+            var errors = new Dictionary<string, string[]>();
+            if (string.IsNullOrWhiteSpace(request.Title)) errors["Title"] = ["Title is required."];
+
+
+            if (errors.Count > 0)
+            {
+                return Results.ValidationProblem(errors);
+            }
+
+            var todo = await service.CreateAsync(request);
+
+            return Results.Created($"/api/v1/todos/{todo.Id}", todo.ToResponse());
+        });
     }
 }
