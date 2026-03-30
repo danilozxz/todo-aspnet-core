@@ -1,5 +1,7 @@
+using System.Reflection.Metadata.Ecma335;
 using Todo.Controllers;
 using Todo.Services;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,12 +12,13 @@ builder.Services.AddScoped<ITodoService, TodoService>();
 
 var app = builder.Build();
 
-
-app.UseHttpsRedirection();
-
-
+app.MapOpenApi(); 
+app.MapScalarApiReference();
 
 app.MapTodoEndpoints();
+app.UseHttpsRedirection();
 
 app.Run();
+
+
 
