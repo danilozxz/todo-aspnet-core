@@ -24,7 +24,7 @@ public class TodoService : ITodoService
     {
         var query = _todos.AsEnumerable();
 
-        if(isCompleted.HasValue)
+        if (isCompleted.HasValue)
         {
             query = query.Where(t => t.IsCompleted == isCompleted.Value);
         }
@@ -44,10 +44,8 @@ public class TodoService : ITodoService
     }
 
     public Task<Todo?> GetByIdAsync(int id)
-    {
-        throw new NotImplementedException();
-    }
-    
+        => Task.FromResult(_todos.FirstOrDefault(t => t.Id == id));
+
     public Task<Todo> CreateAsync(CreateTodoRequest request)
     {
         lock (_lock)
@@ -62,17 +60,26 @@ public class TodoService : ITodoService
             return Task.FromResult(todo);
         }
     }
+    public Task<Todo?> UpdateAsync(int id, UpdateTodoRequest request)
+    {
+        var todo = _todos.FirstOrDefault(t => t.Id == id);
+
+        if (todo is null) return Task.FromResult<Todo?>(null);
+
+        if (!string.IsNullOrEmpty(request.Title)) todo.Title = request.Title;
+        todo.IsCompleted = request.IsCompleted;
+
+        return Task.FromResult<Todo?>(todo);
+    }
 
     public Task<bool> DeleteAsync(int id)
     {
-        throw new NotImplementedException();
+        var todo = _todos.FirstOrDefault(t => t.Id == id);
+        if (todo is null) return Task.FromResult(false);
+
+        _todos.Remove(todo);
+        return Task.FromResult(true);
     }
 
-
-
-    public Task<Todo?> UpdateAsync(int id, string? title = null, bool? isCompleted = null)
-    {
-        throw new NotImplementedException();
-    }
 
 }

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Todo.DTOs;
 using Todo.Services;
 
@@ -27,6 +28,19 @@ public static class TodoController
         }
         );
 
+        api.MapGet("/todos/{id:int}", async (int id, ITodoService service) =>
+        {
+            var todo = await service.GetByIdAsync(id);
+
+            return todo is null
+                ? Results.Problem(
+                    title: "Todo Not Found",
+                    detail: $"Todo with ID {id} was not found.",
+                    statusCode: StatusCodes.Status404NotFound
+                )
+                : Results.Ok(todo.ToResponse());
+        });
+
         api.MapPost("/todos", async (CreateTodoRequest request, ITodoService service) =>
         {
             var errors = new Dictionary<string, string[]>();
@@ -41,6 +55,32 @@ public static class TodoController
             var todo = await service.CreateAsync(request);
 
             return Results.Created($"/api/v1/todos/{todo.Id}", todo.ToResponse());
+        });
+
+        api.MapPut("/todos/{id:int}", async (int id, UpdateTodoRequest request, ITodoService service) =>
+        {
+            var todo = await service.UpdateAsync(id, request);
+
+            return todo is null
+                ? Results.Problem(
+                    title: "Todo Not Found",
+                    detail: $"Todo with ID {id} was not found.",
+                    statusCode: StatusCodes.Status404NotFound
+                )
+                : Results.NoContent();
+        });
+
+        api.MapDelete("/todos/{id:int}", async (int id, ITodoService service) =>
+        {
+            var deleted = await service.DeleteAsync(id);
+
+            return deleted
+                ? Results.NoContent()
+                : Results.Problem(
+                    title: "Todo Not Found",
+                    detail: $"Todo with ID {id} was not found.",
+                    statusCode: StatusCodes.Status404NotFound
+                );
         });
     }
 }

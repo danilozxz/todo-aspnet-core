@@ -11,6 +11,6 @@ public interface ITodoService
 
     Task<Todo?> GetByIdAsync(int id);
     Task<Todo> CreateAsync(CreateTodoRequest request);
-    Task<Todo?> UpdateAsync(int id, string? title = null, bool? isCompleted = null);
+    Task<Todo?> UpdateAsync(int id, UpdateTodoRequest request);
     Task<bool> DeleteAsync(int id);
 }
